@@ -9,6 +9,28 @@
 
 #define HID_ENDPOINT_SIZE 64
 
+// Mac OS-X and Linux automatically load the correct drivers.  On
+// Windows, even though the driver is supplied by Microsoft, an
+// INF file is needed to load the driver.  These numbers need to
+// match the INF file.
+#define VENDOR_ID		0x10C4
+#define PRODUCT_ID		0x82C0
+
+/**************************************************************************
+ *
+ *  Endpoint Buffer Configuration
+ *
+ **************************************************************************/
+
+#define ENDPOINT0_SIZE	64
+
+#define GAMEPAD_INTERFACE	0
+#define GAMEPAD_ENDPOINT	1
+#define GAMEPAD_SIZE		64
+
+#define LSB(n) (n & 255)
+#define MSB(n) ((n >> 8) & 255)
+
 // HAT report (4 bits)
 #define HID_HAT_UP        0x00
 #define HID_HAT_UPRIGHT   0x01
@@ -43,17 +65,65 @@
 
 typedef struct __attribute((packed, aligned(1)))
 {
-	uint16_t buttons;
-	uint8_t hat;
-	uint8_t lx;
-	uint8_t ly;
-	uint8_t rx;
-	uint8_t ry;
+	// digital buttons, 0 = off, 1 = on
+
+	uint8_t square_btn : 1;
+	uint8_t cross_btn : 1;
+	uint8_t circle_btn : 1;
+	uint8_t triangle_btn : 1;
+
+	uint8_t l1_btn : 1;
+	uint8_t r1_btn : 1;
+	uint8_t l2_btn : 1;
+	uint8_t r2_btn : 1;
+
+	uint8_t select_btn : 1;
+	uint8_t start_btn : 1;
+	uint8_t l3_btn : 1;
+	uint8_t r3_btn : 1;
+	
+	uint8_t ps_btn : 1;
+//	uint8_t l2_btn_alt : 1;
+	
+//	uint8_t r2_btn_alt : 1;
+	uint8_t : 2;
+
+	// digital direction, use the dir_* constants(enum)
+	// 8 = center, 0 = up, 1 = up/right, 2 = right, 3 = right/down
+	// 4 = down, 5 = down/left, 6 = left, 7 = left/up
+
+	uint8_t direction;
+
+	// left and right analog sticks, 0x00 left/up, 0x80 middle, 0xff right/down
+
+	uint8_t l_x_axis;
+	uint8_t l_y_axis;
+	uint8_t r_x_axis;
+	uint8_t r_y_axis;
+
+	// Gonna assume these are button analog values for the d-pad.
+	// NOTE: NOT EVEN SURE THIS IS RIGHT, OR IN THE CORRECT ORDER
+	uint8_t right_axis;
+	uint8_t left_axis;
+	uint8_t up_axis;
+	uint8_t down_axis;
+
+	// button axis, 0x00 = unpressed, 0xff = fully pressed
+
+	uint8_t triangle_axis;
+	uint8_t circle_axis;
+	uint8_t cross_axis;
+	uint8_t square_axis;
+
+	uint8_t l1_axis;
+	uint8_t r1_axis;
+	uint8_t l2_axis;
+	uint8_t r2_axis;
 } HIDReport;
 
 static const uint8_t hid_string_language[]     = { 0x09, 0x04 };
-static const uint8_t hid_string_manufacturer[] = "Generic";
-static const uint8_t hid_string_product[]      = "HID Gamepad";
+static const uint8_t hid_string_manufacturer[] = "Open Stick Community";
+static const uint8_t hid_string_product[]      = "PS3 Mode";
 static const uint8_t hid_string_version[]      = "1.0";
 
 static const uint8_t *hid_string_descriptors[] =
@@ -66,110 +136,128 @@ static const uint8_t *hid_string_descriptors[] =
 
 static const uint8_t hid_device_descriptor[] =
 {
-	0x12,        // bLength
-	0x01,        // bDescriptorType (Device)
-	0x00, 0x02,  // bcdUSB 2.00
-	0x00,        // bDeviceClass (Use class information in the Interface Descriptors)
-	0x00,        // bDeviceSubClass
-	0x00,        // bDeviceProtocol
-	0x40,        // bMaxPacketSize0 64
-	0x0D, 0x0F,  // idVendor 0x0F0D
-	0x94, 0x00,  // idProduct 0x92
-	0x00, 0x01,  // bcdDevice 2.00
-	0x01,        // iManufacturer (String Index)
-	0x02,        // iProduct (String Index)
-	0x00,        // iSerialNumber (String Index)
-	0x01,        // bNumConfigurations 1
-};
-
-static const uint8_t hid_hid_descriptor[] =
-{
-	0x09,        // bLength
-	0x21,        // bDescriptorType (HID)
-	0x11, 0x01,  // bcdHID 1.11
-	0x00,        // bCountryCode
-	0x01,        // bNumDescriptors
-	0x22,        // bDescriptorType[0] (HID)
-	0x5A, 0x00,  // wDescriptorLength[0] 90
-};
-
-static const uint8_t hid_configuration_descriptor[] =
-{
-	0x09,        // bLength
-	0x02,        // bDescriptorType (Configuration)
-	0x22, 0x00,  // wTotalLength 34
-	0x01,        // bNumInterfaces 1
-	0x01,        // bConfigurationValue
-	0x00,        // iConfiguration (String Index)
-	0x80,        // bmAttributes
-	0xFA,        // bMaxPower 500mA
-
-	0x09,        // bLength
-	0x04,        // bDescriptorType (Interface)
-	0x00,        // bInterfaceNumber 0
-	0x00,        // bAlternateSetting
-	0x01,        // bNumEndpoints 1
-	0x03,        // bInterfaceClass
-	0x00,        // bInterfaceSubClass
-	0x00,        // bInterfaceProtocol
-	0x00,        // iInterface (String Index)
-
-	0x09,        // bLength
-	0x21,        // bDescriptorType (HID)
-	0x11, 0x01,  // bcdHID 1.11
-	0x00,        // bCountryCode
-	0x01,        // bNumDescriptors
-	0x22,        // bDescriptorType[0] (HID)
-	0x51, 0x00,  // wDescriptorLength[0] 81
-
-	0x07,        // bLength
-	0x05,        // bDescriptorType (Endpoint)
-	0x81,        // bEndpointAddress (IN/D2H)
-	0x03,        // bmAttributes (Interrupt)
-	0x40, 0x00,  // wMaxPacketSize 64
-	0x01,        // bInterval 1 (unit depends on device speed) - NOTE: This is 125us on fast USB, which means it polls 8 times faster than the code responds.
+		18,								  // bLength
+		1,								  // bDescriptorType
+		0x10, 0x01,						  // bcdUSB
+		0,								  // bDeviceClass
+		0,								  // bDeviceSubClass
+		0,								  // bDeviceProtocol
+		ENDPOINT0_SIZE,					  // bMaxPacketSize0
+		LSB(VENDOR_ID), MSB(VENDOR_ID),	  // idVendor
+		LSB(PRODUCT_ID), MSB(PRODUCT_ID), // idProduct
+		0x00, 0x01,						  // bcdDevice
+		1,								  // iManufacturer
+		2,								  // iProduct
+		0,								  // iSerialNumber
+		1								  // bNumConfigurations
 };
 
 static const uint8_t hid_report_descriptor[] =
 {
-	0x05, 0x01,        // Usage Page (Generic Desktop Ctrls)
-	0x09, 0x05,        // Usage (Game Pad)
-	0xA1, 0x01,        // Collection (Application)
-	0x15, 0x00,        //   Logical Minimum (0)
-	0x25, 0x01,        //   Logical Maximum (1)
-	0x35, 0x00,        //   Physical Minimum (0)
-	0x45, 0x01,        //   Physical Maximum (1)
-	0x75, 0x01,        //   Report Size (1)
-	0x95, 0x10,        //   Report Count (16)
-	0x05, 0x09,        //   Usage Page (Button)
-	0x19, 0x01,        //   Usage Minimum (0x01)
-	0x29, 0x10,        //   Usage Maximum (0x10)
-	0x81, 0x02,        //   Input (Data,Var,Abs,No Wrap,Linear,Preferred State,No Null Position)
-	0x05, 0x01,        //   Usage Page (Generic Desktop Ctrls)
-	0x25, 0x07,        //   Logical Maximum (7)
-	0x46, 0x3B, 0x01,  //   Physical Maximum (315)
-	0x75, 0x04,        //   Report Size (4)
-	0x95, 0x01,        //   Report Count (1)
-	0x65, 0x14,        //   Unit (System: English Rotation, Length: Centimeter)
-	0x09, 0x39,        //   Usage (Hat switch)
-	0x81, 0x42,        //   Input (Data,Var,Abs,No Wrap,Linear,Preferred State,Null State)
-	0x65, 0x00,        //   Unit (None)
-	0x95, 0x01,        //   Report Count (1)
-	0x81, 0x01,        //   Input (Const,Array,Abs,No Wrap,Linear,Preferred State,No Null Position)
-	0x26, 0xFF, 0x00,  //   Logical Maximum (255)
-	0x46, 0xFF, 0x00,  //   Physical Maximum (255)
-	0x09, 0x30,        //   Usage (X)
-	0x09, 0x31,        //   Usage (Y)
-	0x09, 0x32,        //   Usage (Z)
-	0x09, 0x35,        //   Usage (Rz)
-	0x75, 0x08,        //   Report Size (8)
-	0x95, 0x04,        //   Report Count (4)
-	0x81, 0x02,        //   Input (Data,Var,Abs,No Wrap,Linear,Preferred State,No Null Position)
-	                   //   * PS3 "magic" vendor page *
-	0x06, 0x00, 0xff,  //   Usage Page (Vendor Specific)
+	0x05, 0x01,        // USAGE_PAGE (Generic Desktop)
+	0x09, 0x05,        // USAGE (Gamepad)
+	0xa1, 0x01,        // COLLECTION (Application)
+	0x15, 0x00,        //   LOGICAL_MINIMUM (0)
+	0x25, 0x01,        //   LOGICAL_MAXIMUM (1)
+	0x35, 0x00,        //   PHYSICAL_MINIMUM (0)
+	0x45, 0x01,        //   PHYSICAL_MAXIMUM (1)
+	0x75, 0x01,        //   REPORT_SIZE (1)
+	0x95, 0x0e,        //   REPORT_COUNT (13)
+	0x05, 0x09,        //   USAGE_PAGE (Button)
+	0x19, 0x01,        //   USAGE_MINIMUM (Button 1)
+	0x29, 0x0e,        //   USAGE_MAXIMUM (Button 13)
+	0x81, 0x02,        //   INPUT (Data,Var,Abs)
+	0x95, 0x02,        //   REPORT_COUNT (3)
+	0x81, 0x01,        //   INPUT (Cnst,Ary,Abs)
+	0x05, 0x01,        //   USAGE_PAGE (Generic Desktop)
+	0x25, 0x07,        //   LOGICAL_MAXIMUM (7)
+	0x46, 0x3b, 0x01,  //   PHYSICAL_MAXIMUM (315)
+	0x75, 0x04,        //   REPORT_SIZE (4)
+	0x95, 0x01,        //   REPORT_COUNT (1)
+	0x65, 0x14,        //   UNIT (Eng Rot:Angular Pos)
+	0x09, 0x39,        //   USAGE (Hat switch)
+	0x81, 0x42,        //   INPUT (Data,Var,Abs,Null)
+	0x65, 0x00,        //   UNIT (None)
+	0x95, 0x01,        //   REPORT_COUNT (1)
+	0x81, 0x01,        //   INPUT (Cnst,Ary,Abs)
+	0x26, 0xff, 0x00,  //   LOGICAL_MAXIMUM (255)
+	0x46, 0xff, 0x00,  //   PHYSICAL_MAXIMUM (255)
+	0x09, 0x30,        //   USAGE (X)
+	0x09, 0x31,        //   USAGE (Y)
+	0x09, 0x32,        //   USAGE (Z)
+	0x09, 0x35,        //   USAGE (Rz)
+	0x75, 0x08,        //   REPORT_SIZE (8)
+	0x95, 0x04,        //   REPORT_COUNT (6)
+	0x81, 0x02,        //   INPUT (Data,Var,Abs)
+	0x06, 0x00, 0xff,  //   USAGE_PAGE (Vendor Specific)
 	0x09, 0x20,        //   Unknown
-	0x75, 0x08,        //   Report Size (8)
-	0x95, 0x01,        //   Report Count (1)
-	0xB1, 0x02,        //   Feature (Data,Var,Abs,No Wrap,Linear,Preferred State,No Null Position,Non-volatile)
-	0xC0,              // End Collection
+	0x09, 0x21,        //   Unknown
+	0x09, 0x22,        //   Unknown
+	0x09, 0x23,        //   Unknown
+	0x09, 0x24,        //   Unknown
+	0x09, 0x25,        //   Unknown
+	0x09, 0x26,        //   Unknown
+	0x09, 0x27,        //   Unknown
+	0x09, 0x28,        //   Unknown
+	0x09, 0x29,        //   Unknown
+	0x09, 0x2a,        //   Unknown
+	0x09, 0x2b,        //   Unknown
+	0x95, 0x0c,        //   REPORT_COUNT (12)
+	0x81, 0x02,        //   INPUT (Data,Var,Abs)
+	0x0a, 0x21, 0x26,  //   Unknown
+	0x95, 0x08,        //   REPORT_COUNT (8)
+	0xb1, 0x02,        //   FEATURE (Data,Var,Abs)
+	0xc0               // END_COLLECTION
+};
+
+static const uint8_t hid_hid_descriptor[] =
+{
+		0x09,								 // bLength
+		0x21,								 // bDescriptorType (HID)
+		0x11, 0x01,							 // bcdHID 1.11
+		0x00,								 // bCountryCode
+		0x01,								 // bNumDescriptors
+		0x22,								 // bDescriptorType[0] (HID)
+		sizeof(hid_report_descriptor), 0x00, // wDescriptorLength[0] 90
+};
+
+#define CONFIG1_DESC_SIZE		(9+9+9+7)
+static const uint8_t hid_configuration_descriptor[] =
+{
+	    // configuration descriptor, USB spec 9.6.3, page 264-266, Table 9-10
+	9,						       // bLength;
+	2,						       // bDescriptorType;
+	LSB(CONFIG1_DESC_SIZE),        // wTotalLength
+	MSB(CONFIG1_DESC_SIZE),
+	1,	                           // bNumInterfaces
+	1,	                           // bConfigurationValue
+	0,	                           // iConfiguration
+	0x80,                          // bmAttributes
+	50,	                           // bMaxPower
+		// interface descriptor, USB spec 9.6.5, page 267-269, Table 9-12
+	9,				               // bLength
+	4,				               // bDescriptorType
+	GAMEPAD_INTERFACE,             // bInterfaceNumber
+	0,				               // bAlternateSetting
+	1,				               // bNumEndpoints
+	0x03,			               // bInterfaceClass (0x03 = HID)
+	0x00,			               // bInterfaceSubClass (0x00 = No Boot)
+	0x00,			               // bInterfaceProtocol (0x00 = No Protocol)
+	0,				               // iInterface
+		// HID interface descriptor, HID 1.11 spec, section 6.2.1
+	9,							   // bLength
+	0x21,						   // bDescriptorType
+	0x11, 0x01,					   // bcdHID
+	0,							   // bCountryCode
+	1,							   // bNumDescriptors
+	0x22,						   // bDescriptorType
+	sizeof(hid_report_descriptor), // wDescriptorLength
+	0,
+		// endpoint descriptor, USB spec 9.6.6, page 269-271, Table 9-13
+	7,						 	   // bLength
+	5,						       // bDescriptorType
+	GAMEPAD_ENDPOINT | 0x80,       // bEndpointAddress
+	0x03,					       // bmAttributes (0x03=intr)
+	GAMEPAD_SIZE, 0,		       // wMaxPacketSize
+	10						       // bInterval
 };
