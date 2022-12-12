@@ -138,7 +138,7 @@ static const uint8_t hid_device_descriptor[] =
 {
 		18,								  // bLength
 		1,								  // bDescriptorType
-		0x10, 0x01,						  // bcdUSB
+		0x00, 0x02,						  // bcdUSB
 		0,								  // bDeviceClass
 		0,								  // bDeviceSubClass
 		0,								  // bDeviceProtocol
@@ -259,5 +259,5 @@ static const uint8_t hid_configuration_descriptor[] =
 	GAMEPAD_ENDPOINT | 0x80,       // bEndpointAddress
 	0x03,					       // bmAttributes (0x03=intr)
 	GAMEPAD_SIZE, 0,		       // wMaxPacketSize
-	10						       // bInterval
+	1						       // bInterval (1 ms)
 };
