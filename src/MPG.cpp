@@ -7,12 +7,14 @@
 
 static HIDReport hidReport
 {
-	.buttons = 0,
-	.hat = HID_HAT_NOTHING,
-	.lx = HID_JOYSTICK_MID,
-	.ly = HID_JOYSTICK_MID,
-	.rx = HID_JOYSTICK_MID,
-	.ry = HID_JOYSTICK_MID,
+	.square_btn = 0, .cross_btn = 0, .circle_btn = 0, .triangle_btn = 0,
+	.l1_btn = 0, .r1_btn = 0, .l2_btn = 0, .r2_btn = 0,
+	.select_btn = 0, .start_btn = 0, .l3_btn = 0, .r3_btn = 0, .ps_btn = 0,
+	.direction = 0x08,
+	.l_x_axis = 0x80, .l_y_axis = 0x80, .r_x_axis = 0x80, .r_y_axis = 0x80,
+	.right_axis = 0x00, .left_axis = 0x00, .up_axis = 0x00, .down_axis = 0x00,
+	.triangle_axis = 0x00, .circle_axis = 0x00, .cross_axis = 0x00, .square_axis = 0x00,
+	.l1_axis = 0x00, .r1_axis = 0x00, .l2_axis = 0x00, .r2_axis = 0x00
 };
 
 static SwitchReport switchReport
@@ -77,38 +79,36 @@ HIDReport *MPG::getHIDReport()
 {
 	switch (state.dpad & GAMEPAD_MASK_DPAD)
 	{
-		case GAMEPAD_MASK_UP:                        hidReport.hat = HID_HAT_UP;        break;
-		case GAMEPAD_MASK_UP | GAMEPAD_MASK_RIGHT:   hidReport.hat = HID_HAT_UPRIGHT;   break;
-		case GAMEPAD_MASK_RIGHT:                     hidReport.hat = HID_HAT_RIGHT;     break;
-		case GAMEPAD_MASK_DOWN | GAMEPAD_MASK_RIGHT: hidReport.hat = HID_HAT_DOWNRIGHT; break;
-		case GAMEPAD_MASK_DOWN:                      hidReport.hat = HID_HAT_DOWN;      break;
-		case GAMEPAD_MASK_DOWN | GAMEPAD_MASK_LEFT:  hidReport.hat = HID_HAT_DOWNLEFT;  break;
-		case GAMEPAD_MASK_LEFT:                      hidReport.hat = HID_HAT_LEFT;      break;
-		case GAMEPAD_MASK_UP | GAMEPAD_MASK_LEFT:    hidReport.hat = HID_HAT_UPLEFT;    break;
-		default:                                     hidReport.hat = HID_HAT_NOTHING;   break;
+		case GAMEPAD_MASK_UP:                        hidReport.direction = HID_HAT_UP;        break;
+		case GAMEPAD_MASK_UP | GAMEPAD_MASK_RIGHT:   hidReport.direction = HID_HAT_UPRIGHT;   break;
+		case GAMEPAD_MASK_RIGHT:                     hidReport.direction = HID_HAT_RIGHT;     break;
+		case GAMEPAD_MASK_DOWN | GAMEPAD_MASK_RIGHT: hidReport.direction = HID_HAT_DOWNRIGHT; break;
+		case GAMEPAD_MASK_DOWN:                      hidReport.direction = HID_HAT_DOWN;      break;
+		case GAMEPAD_MASK_DOWN | GAMEPAD_MASK_LEFT:  hidReport.direction = HID_HAT_DOWNLEFT;  break;
+		case GAMEPAD_MASK_LEFT:                      hidReport.direction = HID_HAT_LEFT;      break;
+		case GAMEPAD_MASK_UP | GAMEPAD_MASK_LEFT:    hidReport.direction = HID_HAT_UPLEFT;    break;
+		default:                                     hidReport.direction = HID_HAT_NOTHING;   break;
 	}
 
-	hidReport.buttons = 0
-		| (pressedB1() ? HID_MASK_CROSS    : 0)
-		| (pressedB2() ? HID_MASK_CIRCLE   : 0)
-		| (pressedB3() ? HID_MASK_SQUARE   : 0)
-		| (pressedB4() ? HID_MASK_TRIANGLE : 0)
-		| (pressedL1() ? HID_MASK_L1       : 0)
-		| (pressedR1() ? HID_MASK_R1       : 0)
-		| (pressedL2() ? HID_MASK_L2       : 0)
-		| (pressedR2() ? HID_MASK_R2       : 0)
-		| (pressedS1() ? HID_MASK_SELECT   : 0)
-		| (pressedS2() ? HID_MASK_START    : 0)
-		| (pressedL3() ? HID_MASK_L3       : 0)
-		| (pressedR3() ? HID_MASK_R3       : 0)
-		| (pressedA1() ? HID_MASK_PS       : 0)
-		| (pressedA2() ? HID_MASK_TP       : 0)
-	;
+	hidReport.cross_btn    = pressedB1();
+	hidReport.circle_btn   = pressedB2();
+	hidReport.square_btn   = pressedB3();
+	hidReport.triangle_btn = pressedB4();
+	hidReport.l1_btn       = pressedL1();
+	hidReport.r1_btn       = pressedR1();
+	hidReport.l2_btn       = pressedL2();
+	hidReport.r2_btn       = pressedR2();
+	hidReport.select_btn   = pressedS1();
+	hidReport.start_btn    = pressedS2();
+	hidReport.l3_btn       = pressedL3();
+	hidReport.r3_btn       = pressedR3();
+	hidReport.ps_btn       = pressedA1();
+//	hidReport.cross_btn = pressedA2();
 
-	hidReport.lx = static_cast<uint8_t>(state.lx >> 8);
-	hidReport.ly = static_cast<uint8_t>(state.ly >> 8);
-	hidReport.rx = static_cast<uint8_t>(state.rx >> 8);
-	hidReport.ry = static_cast<uint8_t>(state.ry >> 8);
+	hidReport.l_x_axis = static_cast<uint8_t>(state.lx >> 8);
+	hidReport.l_y_axis = static_cast<uint8_t>(state.ly >> 8);
+	hidReport.r_x_axis = static_cast<uint8_t>(state.rx >> 8);
+	hidReport.r_y_axis = static_cast<uint8_t>(state.ry >> 8);
 
 	return &hidReport;
 }
