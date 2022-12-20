@@ -5,7 +5,10 @@ include(CTest)
 enable_testing()
 
 add_library(MPG src/MPG.cpp)
-
+target_include_directories(MPG INTERFACE 
+src
+src/descriptors
+)
 set(CMAKE_C_STANDARD 11)
 set(CMAKE_CXX_STANDARD 17)
 set(CPACK_PROJECT_NAME ${PROJECT_NAME})
