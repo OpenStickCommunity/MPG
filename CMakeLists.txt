@@ -4,7 +4,12 @@ project(MPG VERSION 0.1.1)
 include(CTest)
 enable_testing()
 
-add_library(MPG src/MPG.cpp)
+add_library(MPG
+    src/MPG.cpp
+    src/MPGS.cpp
+    src/GamepadDebouncer.cpp
+    src/GamepadDescriptors.cpp
+    )
 target_include_directories(MPG INTERFACE 
 src
 src/descriptors
