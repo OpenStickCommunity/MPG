@@ -356,7 +356,7 @@ The D-pad can Choose from 3 operating modes for the D-pad:
 
 Simultaneous Opposite Cardinal Direction (SOCD) cleaning will ensure the controller doesn't send invalid directional inputs to the computer/console, like Left + Right at the same time. There are 3 modes to choose from:
 
-* **`F2 + DPAD UP`** - **Up Priority mode**: Up + Down = Up, Left + Right = Neutral (Hitbox behavior)
+* **`F2 + DPAD UP`** - **Up Priority mode**: Up + Down = Up, Left + Right = Neutral (Stickless behavior)
 * **`F2 + DPAD DOWN`** - **Neutral mode**: Up + Down = Neutral, Left + Right = Neutral
 * **`F2 + DPAD LEFT`** - **Last Input Priority (Last Win)**: Hold Up then hold Down = Down, then release and re-press Up = Up. Applies to both axes.
 
